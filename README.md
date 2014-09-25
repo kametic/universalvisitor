@@ -5,24 +5,26 @@ UniversalVisitor is a tiny but powerful library allowing to easily navigate an o
 
 You can use this library via maven using this coordinate
 
-    <dependency>
-        <groupId>org.kametic</groupId>
-        <artifactId>universalvisitor</artifactId>
-        <version>1.0</version>
-    </dependency>
+```xml
+<dependency>
+    <groupId>org.kametic</groupId>
+    <artifactId>universalvisitor</artifactId>
+    <version>1.0</version>
+</dependency>
+```
 
 # API
 
 UniversalVisitor's API is simple :
-   - UniversalVisitor : the entrypoint. Will navigate through the object and create linkedlist of Node.
-   - Predicate : In case of a navigation inside an object graph the number of object can be huge, so the Predicate will help choose which Field are candidate for the navigation
-   - Node : a linked list of Node that will serve as input to the MapReduce. It contains the current AnnotatedElement (Field,Method, Constructor), plus some metadata,
+   - `UniversalVisitor`: the entrypoint. Will navigate through the object and create linkedlist of Node.
+   - `Predicate` : In case of a navigation inside an object graph the number of object can be huge, so the Predicate will help choose which Field are candidate for the navigation
+   - `Node` : a linked list of Node that will serve as input to the MapReduce. It contains the current AnnotatedElement (Field,Method, Constructor), plus some metadata,
      - Level in the tree
      -  kind Array/Set/Hash
      - then the data associated with (index or key) 
-   - Mapper<T> : the mapper have to choose which kind of Node it can map (its input) , then map it and outputs the results.
-   - Reducer<T,R> : the reducer take as inputs the many results of the Mapper, then reduce it to provide a usefull information.
-   - MapReduce<T> : merely a composition of one Mapper and 0..n Reducer.
+   - `Mapper<T>`: the mapper have to choose which kind of Node it can map (its input) , then map it and outputs the results.
+   - `Reducer<T,R>`: the reducer take as inputs the many results of the Mapper, then reduce it to provide a usefull information.
+   - `MapReduce<T>`: merely a composition of one Mapper and 0..n Reducer.
 
 # Examples
 ## A predicate
@@ -109,7 +111,7 @@ At the end of the visit, you'll have to call the `reduce()` method on  all your 
 
 ## All Together
 
-THe end 2 end scenario
+The end 2 end scenario
 
 ```java
 MyPredicate2 predicate = new MyPredicate2(); // the navigation predicate
