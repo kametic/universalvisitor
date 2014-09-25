@@ -17,23 +17,23 @@
 package org.kametic.universalvisitor.api;
 
 
-public interface Visitor<F extends Filter<?>>
+public interface Visitor<Visited , F extends Filter<?>>
 {
 
-    public <T> void visit(Object o, Mapper<T> mapper);
+    public <T> void visit(Visited v, Mapper<T> mapper);
 
-    public <T> void visit(Object o, F filter, Mapper<T> mapper);
+    public <T> void visit(Visited v, F filter, Mapper<T> mapper);
 
-    public <T> void visit(Object o, Mapper<T> mapper, Reducer<T, ?>... reducers);
+    public <T> void visit(Visited v, Mapper<T> mapper, Reducer<T, ?>... reducers);
 
-    public <T> void visit(Object o, F filter, Mapper<T> mapper, Reducer<T, ?>... reducers);
+    public <T> void visit(Visited v, F filter, Mapper<T> mapper, Reducer<T, ?>... reducers);
 
-    public <T> void visit(Object o, MapReduce<T>... mapReduces);
+    public <T> void visit(Visited v, MapReduce<T>... mapReduces);
 
-    public <T> void visit(Object o, F filter, MapReduce<T>... mapReduces);
+    public <T> void visit(Visited v, F filter, MapReduce<T>... mapReduces);
 
-    public void visit(Object o, Job<?> job);
+    public void visit(Visited v, Job<?> job);
 
-    public void visit(Object o, F filter, Job<?> job);
+    public void visit(Visited v, F filter, Job<?> job);
 
 }

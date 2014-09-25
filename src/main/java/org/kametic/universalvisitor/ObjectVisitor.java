@@ -16,7 +16,6 @@
  */
 package org.kametic.universalvisitor;
 
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -31,7 +30,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.kametic.universalvisitor.api.Filter;
 import org.kametic.universalvisitor.api.Job;
 import org.kametic.universalvisitor.api.MapReduce;
 import org.kametic.universalvisitor.api.Mapper;
@@ -39,22 +37,22 @@ import org.kametic.universalvisitor.api.Metadata;
 import org.kametic.universalvisitor.api.Node;
 import org.kametic.universalvisitor.api.Reducer;
 import org.kametic.universalvisitor.api.Visitor;
+import org.kametic.universalvisitor.core.ChainedNode;
 import org.kametic.universalvisitor.core.JobDefault;
 import org.kametic.universalvisitor.core.MapReduceDefault;
-import org.kametic.universalvisitor.core.NodeDefault;
 import org.kametic.universalvisitor.core.object.FieldFilter;
 
 /**
  * UniversalVisitor is the main entrypoint. With it you can visit any object graph instance.
  * <p>
  * It will first visit the object graph then produces a linked list of {@link Node}.
- * <p> 
- * The Map Reduce pattern will then be applied from this linked list. Users can create their Map Reduce jobs by using the API provided. 
+ * <p>
+ * The Map Reduce pattern will then be applied from this linked list. Users can create their Map Reduce jobs by using the API provided.
  * <ul>
  *    <li> {@link Mapper} : a mapper from the Map Reduce design pattern
  *    <li> {@link Reducer} : a reducer from the Map Reduce design pattern
- *    <li> {@link Job} : a coherent set of one {@link Mapper} and one or more {@link Reducer}s  
- *    <li> {@link MapReduce} : a coherent set of one {@link Mapper} and one or more {@link Reducer}s  
+ *    <li> {@link Job} : a coherent set of one {@link Mapper} and one or more {@link Reducer}s
+ *    <li> {@link MapReduce} : a coherent set of one {@link Mapper} and one or more {@link Reducer}s
  *    <li> {@link Job} : a set of {@link MapReduce}
  *  </ul>
  * 
@@ -62,8 +60,8 @@ import org.kametic.universalvisitor.core.object.FieldFilter;
  * @author Epo Jemba
  * @author Pierre Thirouin
  */
-public class ObjectVisitor implements Visitor<FieldFilter>
-{ 
+public class ObjectVisitor implements Visitor<Object,FieldFilter>
+{
 
     /* (non-Javadoc)
      * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Mapper)
@@ -71,7 +69,7 @@ public class ObjectVisitor implements Visitor<FieldFilter>
     @Override
     public <T> void visit(Object o, Mapper<T> mapper)
     {
-        visit(o , null  ,  mapper);
+        visit(o ,(FieldFilter) null  ,  mapper);
     }
 
     /* (non-Javadoc)
@@ -135,7 +133,7 @@ public class ObjectVisitor implements Visitor<FieldFilter>
     })
     private void doMapReduce(Job<?> job, ChainedNode node)
     {
-        for (node = node.next; node != null; node = node.next)
+        for (node = node.next(); node != null; node = node.next())
         {
             for (MapReduce mapReduce : job.mapReduces())
             {
@@ -172,97 +170,24 @@ public class ObjectVisitor implements Visitor<FieldFilter>
         
         ChainedNode node = ChainedNode.createRoot();
         
-        Filter<?> f = null;
+        FieldFilter f = null;
         
         if (filter == null)
         {
-            f = Filter.TRUE;
-        } 
-        else 
+            f = FieldFilter.TRUE;
+        }
+        else
         {
             f = filter;
         }
         
-        recursiveVisit(o, cache, node, (FieldFilter) f);
+        recursiveVisit(o, cache, node,  f);
         
         doMapReduce(job, node);
         
     }
 
-    private static class ChainedNode extends NodeDefault
-    {
-        ChainedNode next;
-
-        protected ChainedNode(Object instance, AnnotatedElement annotatedElement, int level, ChainedNode next)
-        {
-            super(instance, annotatedElement, level);
-            this.next = next;
-        }
-
-        private void next(ChainedNode node)
-        {
-            if (next != null)
-            {
-                throw new IllegalStateException("next pair can not be set twice.");
-            }
-            next = node;
-        }
-
-        public static ChainedNode createRoot()
-        {
-            return new ChainedNode(new Object(), null, -1, null);
-        }
-
-        public ChainedNode append(Object o, AnnotatedElement ao, int level, Metadata metadata)
-        {
-
-            next(new ChainedNode(o, ao, level, null).metadata(metadata));
-
-            return next;
-        }
-
-        @Override
-        public ChainedNode metadata(Metadata metadata)
-        {
-            return (ChainedNode) super.metadata(metadata);
-        }
-
-        public ChainedNode last()
-        {
-            if (next != null)
-            {
-                return next.last();
-            }
-            else
-            {
-                return this;
-            }
-        }
-
-        @Override
-        public String toString()
-        {
-            String indentation = "";
-            for (int i = 0; i < level; i++)
-            {
-                indentation += "\t";
-            } // instance()=
-            String rep = String.format(
-                    "%sChainedNode [ %s@%s , level=%s , annotatedElement=%s] \n%s",
-                    indentation,
-                    instance().getClass().getSimpleName(),
-                    Integer.toHexString(instance().hashCode()),
-                    level(),
-                    visitedElement(),
-                    next);
-            return rep;
-
-            // return "ChainedNode [instance()=" + instance() + ", level()="
-            // + level() + ", annotatedElement()=" + annotatedElement()
-            // + "]  ==> \n" + next;
-        }
-
-    }
+  
 
   
 

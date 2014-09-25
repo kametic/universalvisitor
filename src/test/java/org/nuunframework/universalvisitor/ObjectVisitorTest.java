@@ -13,14 +13,14 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.kametic.universalvisitor.UniversalVisitor;
-import org.kametic.universalvisitor.api.Filter;
+import org.kametic.universalvisitor.ObjectVisitor;
 import org.kametic.universalvisitor.api.MapReduce;
 import org.kametic.universalvisitor.api.Mapper;
 import org.kametic.universalvisitor.api.Metadata;
 import org.kametic.universalvisitor.api.Node;
 import org.kametic.universalvisitor.api.Reducer;
 import org.kametic.universalvisitor.core.MapReduceDefault;
+import org.kametic.universalvisitor.core.object.FieldFilter;
 import org.nuunframework.universalvisitor.sample.Alphabet;
 import org.nuunframework.universalvisitor.sample.collections.H;
 import org.nuunframework.universalvisitor.sample.collections.I;
@@ -44,10 +44,10 @@ import org.nuunframework.universalvisitor.sample.simple.C;
  *
  * 
  */
-public class UniversalVisitorTest
+public class ObjectVisitorTest
 {
 
-    UniversalVisitor underTest;
+    ObjectVisitor underTest;
 
     A                a;
 
@@ -69,7 +69,7 @@ public class UniversalVisitorTest
     @Before
     public void init()
     {
-        underTest = new UniversalVisitor();
+        underTest = new ObjectVisitor();
         a = new A();
         B b = new B();
         C c = new C();
@@ -228,7 +228,7 @@ public class UniversalVisitorTest
     @Test
     public void mutator_mapper()
     {
-        UniversalVisitor underTest2 = new UniversalVisitor();
+        ObjectVisitor underTest2 = new ObjectVisitor();
         MyPredicate predicate = new MyPredicate();
         MutatorMapper mapper = new MutatorMapper();
 
@@ -534,7 +534,7 @@ public class UniversalVisitorTest
         }
     }
 
-    static class MyPredicate implements Filter
+    static class MyPredicate implements FieldFilter
     {
 
         @Override
@@ -546,7 +546,7 @@ public class UniversalVisitorTest
 
     }
 
-    static class MyPredicate2 implements Filter
+    static class MyPredicate2 implements FieldFilter
     {
 
         @Override

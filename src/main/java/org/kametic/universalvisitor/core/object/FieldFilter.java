@@ -21,11 +21,19 @@ import java.lang.reflect.Field;
 import org.kametic.universalvisitor.api.Filter;
 
 /**
- * 
  * @author ejemba
- *
  */
 public interface FieldFilter extends Filter<Field>
 {
+
+    FieldFilter TRUE = new FieldFilter()
+                     {
+                         @Override
+                         public boolean retains(Field input)
+                         {
+                             // TODO Auto-generated method stub
+                             return true;
+                         }
+                     };
 
 }
