@@ -16,22 +16,22 @@
  */
 package org.kametic.universalvisitor.api;
 
-import java.lang.reflect.Field;
 
 /**
  * @author Epo Jemba
  * @author Pierre Thirouin
  */
-public interface Filter
+public interface Filter<T>
 {
 
-    boolean retains(Field input);
+    boolean retains(T input);
 
-    Filter TRUE = new Filter()
+    Filter<?> TRUE = new Filter<Object>()
                 {
                     @Override
-                    public boolean retains(Field input)
+                    public boolean retains(Object input)
                     {
+                        // TODO Auto-generated method stub
                         return true;
                     }
                 };

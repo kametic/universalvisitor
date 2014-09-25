@@ -38,6 +38,7 @@ import org.kametic.universalvisitor.api.Mapper;
 import org.kametic.universalvisitor.api.Metadata;
 import org.kametic.universalvisitor.api.Node;
 import org.kametic.universalvisitor.api.Reducer;
+import org.kametic.universalvisitor.api.object.ObjectFilter;
 import org.kametic.universalvisitor.core.JobDefault;
 import org.kametic.universalvisitor.core.MapReduceDefault;
 import org.kametic.universalvisitor.core.NodeDefault;
@@ -60,81 +61,77 @@ import org.kametic.universalvisitor.core.NodeDefault;
  * @author Epo Jemba
  * @author Pierre Thirouin
  */
-public class UniversalVisitor
-{
+public class ObjectVisitor implements Visitor<ObjectFilter>
+{ 
 
-    @SuppressWarnings("unchecked")
-    public <T> void visit(AnnotatedElement ae, Mapper<T> mapper)
-    {
-        visit(ae, (Filter) null, new MapReduceDefault<T>(mapper));
-    }
-
+    /* (non-Javadoc)
+     * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Mapper)
+     */
+    @Override
     @SuppressWarnings("unchecked")
     public <T> void visit(Object o, Mapper<T> mapper)
     {
-        visit(o, (Filter) null, new MapReduceDefault<T>(mapper));
+        visit(o , null  ,  mapper);
     }
 
+    /* (non-Javadoc)
+     * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Filter, org.kametic.universalvisitor.api.Mapper)
+     */
+    @Override
     @SuppressWarnings("unchecked")
-    public <T> void visit(AnnotatedElement o, Filter filter, Mapper<T> mapper)
+    public <T> void visit(Object o, ObjectFilter filter, Mapper<T> mapper)
     {
         visit(o, filter, new MapReduceDefault<T>(mapper));
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> void visit(Object o, Filter filter, Mapper<T> mapper)
-    {
-        visit(o, filter, new MapReduceDefault<T>(mapper));
-    }
-
+    /* (non-Javadoc)
+     * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Mapper, org.kametic.universalvisitor.api.Reducer)
+     */
+    @Override
     @SuppressWarnings({
             "unchecked", "rawtypes"
     })
     public <T> void visit(Object o, Mapper<T> mapper, Reducer... reducers)
     {
-        visit(o, (Filter) null, new MapReduceDefault<T>(mapper, reducers));
+        visit(o , null , mapper, reducers);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> void visit(Object o, Filter filter, Mapper<T> mapper, Reducer<T, ?> reducer)
+    /* (non-Javadoc)
+     * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Filter, org.kametic.universalvisitor.api.Mapper, org.kametic.universalvisitor.api.Reducer)
+     */
+    @Override
+    @SuppressWarnings({
+            "unchecked", "rawtypes"
+    })
+    public <T> void visit(Object o, ObjectFilter filter, Mapper<T> mapper, Reducer... reducers)
     {
-        visit(o, filter, new MapReduceDefault<T>(mapper, reducer));
+        visit(o, filter, new MapReduceDefault<T>(mapper, reducers));
     }
 
+    /* (non-Javadoc)
+     * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.MapReduce)
+     */
+    @Override
     public void visit(Object o, MapReduce<?>... mapReduces)
     {
         visit(o, null, mapReduces);
     }
 
-    @SuppressWarnings("rawtypes")
-    public void visit(AnnotatedElement ae, Filter filter, MapReduce<?>... mapReduces)
-    {
-        visit(ae, filter, new JobDefault(mapReduces));
-    }
 
+
+    /* (non-Javadoc)
+     * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Filter, org.kametic.universalvisitor.api.MapReduce)
+     */
+    @Override
     @SuppressWarnings({
         "rawtypes"
     })
-    public void visit(Object o, Filter filter, MapReduce... mapReduces)
+    public void visit(Object o, ObjectFilter filter, MapReduce... mapReduces)
     {
         visit(o, filter, new JobDefault(mapReduces));
     }
 
-    @SuppressWarnings({
-        "rawtypes"
-    })
-    public void visit(AnnotatedElement ae, Filter filter, Job job)
-    {
-        Set<Object> cache = new HashSet<Object>();
-        ChainedNode node = ChainedNode.createRoot();
-        if (filter == null)
-        {
-            filter = Filter.TRUE;
-        }
 
-        recursiveVisit(ae, cache, node, filter);
-        doMapReduce(job, node);
-    }
 
     /**
      * @param job
@@ -150,7 +147,7 @@ public class UniversalVisitor
         {
             for (MapReduce mapReduce : job.mapReduces())
             {
-                if (mapReduce.getMapper().handle(node.annotatedElement()))
+                if (mapReduce.getMapper().handle(node.visitedElement()))
                 {
                     Object t = mapReduce.getMapper().map(node);
 
@@ -163,25 +160,35 @@ public class UniversalVisitor
         }
     }
 
-    @SuppressWarnings({
-        "rawtypes"
-    })
-    public void visit(Object o, Filter filter, Job job)
+    /* (non-Javadoc)
+     * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Job)
+     */
+    @Override
+    public void visit(Object o,  Job<?> job)
     {
-
+         visit(o , null , job);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Filter, org.kametic.universalvisitor.api.Job)
+     */
+    @Override
+    public void visit(Object o, ObjectFilter filter, Job<?> job)
+    {
+        
         Set<Object> cache = new HashSet<Object>();
-
+        
         ChainedNode node = ChainedNode.createRoot();
-
+        
         if (filter == null)
         {
             filter = Filter.TRUE;
         }
-
+        
         recursiveVisit(o, cache, node, filter);
-
+        
         doMapReduce(job, node);
-
+        
     }
 
     private static class ChainedNode extends NodeDefault
@@ -248,7 +255,7 @@ public class UniversalVisitor
                     instance().getClass().getSimpleName(),
                     Integer.toHexString(instance().hashCode()),
                     level(),
-                    annotatedElement(),
+                    visitedElement(),
                     next);
             return rep;
 
@@ -259,50 +266,9 @@ public class UniversalVisitor
 
     }
 
-    // private void recursiveVisit(AnnotatedElement ae, Set<Object> cache, ChainedNode node, Filter filter)
-    // {
-    //
-    // int currentLevel = node.level() + 1;
-    //
-    // if (!cache.contains(ae))
-    // {
-    //
-    // cache.add(ae);
-    //
-    // if (ae == null)
-    // {
-    // // ignore nulls
-    // }
-    // else if (Constructor.class.isAssignableFrom(ae.getClass()))
-    // {
-    // visitConstructor((Constructor) ae, cache, node, currentLevel, filter);
-    // }
-    // else if (Method.class.isAssignableFrom(ae.getClass()))
-    // {
-    // visitMethod((Method) ae, cache, node, currentLevel, filter);
-    // }
-    // else if (Field.class.isAssignableFrom(ae.getClass()))
-    // {
-    // visitField((Field) ae, cache, node, currentLevel, filter);
-    // }
-    // else if (Package.class.isAssignableFrom(ae.getClass()))
-    // {
-    // visitPackage((Package) ae, cache, node, currentLevel, filter);
-    // }
-    // else if (Class.class.isAssignableFrom(ae.getClass()) && ae.getClass().isAnnotation())
-    // {
-    // visitClass((Constructor) ae, cache, node, currentLevel, filter);
-    // }
-    //
-    // else
-    // {
-    // // visitObject(object, cache, node, currentLevel,filter);
-    // throw new IllegalStateException("Can not visist " + ae);
-    // }
-    // }
-    // }
+  
 
-    private void recursiveVisit(Object object, Set<Object> cache, ChainedNode node, Filter filter)
+    private void recursiveVisit(Object object, Set<Object> cache, ChainedNode node, ObjectFilter filter)
     {
 
         int currentLevel = node.level() + 1;
@@ -335,67 +301,14 @@ public class UniversalVisitor
         }
     }
 
-    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, Filter filter)
+    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, ObjectFilter filter)
     {
         visitObject(object, cache, node, currentLevel, filter, null);
     }
 
-    // private <T> void visitConstructor(Constructor<T> ae, Set<Object> cache, ChainedNode node, int
-    // currentLevel, Filter filter, Metadata metadata)
-    // {
-    // // Params
-    // // Annotations
-    // // Exceptions
-    // Class<? extends Object> currentClass = ae.getClass();
-    //
-    // ChainedNode current = node;
-    //
-    // Class<?>[] family = getAllInterfacesAndClasses(currentClass);
-    // for (Class<?> elementClass : family)
-    // { // We iterate over all the family
-    // // tree of the current class
-    // //
-    // if (elementClass != null && !isJdkMember(elementClass))
-    // {
-    //
-    // for (Constructor<?> c : elementClass.getDeclaredConstructors())
-    // {
-    // if (!isJdkMember(c) && !c.isSynthetic())
-    // {
-    // current = current.append(ae, c, currentLevel, metadata);
-    // }
-    // }
-    // //
-    // for (Method m : elementClass.getDeclaredMethods())
-    // {
-    // if (!isJdkMember(m) && !m.isSynthetic())
-    // {
-    // current = current.append(ae, m, currentLevel, metadata);
-    // }
-    // }
-    //
-    // for (Field f : elementClass.getDeclaredFields())
-    // {
-    // if (!isJdkMember(f) && !f.isSynthetic())
-    // {
-    //
-    // current = current.append(ae, f, currentLevel, metadata);
-    //
-    // if (filter != null && filter.retains(f))
-    // {
-    // Object deeperObject = readField(f, ae);
-    //
-    // recursiveVisit(deeperObject, cache, current, filter);
-    // current = current.last();
-    // }
-    // }
-    // }
-    // }
-    //
-    // }
-    // }
+   
 
-    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, Filter filter, Metadata metadata)
+    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, ObjectFilter filter, Metadata metadata)
     {
 
         Class<? extends Object> currentClass = object.getClass();
@@ -449,7 +362,7 @@ public class UniversalVisitor
         }
     }
 
-    private void visitAllCollection(Collection<?> collection, Set<Object> cache, ChainedNode node, int currentLevel, Filter filter)
+    private void visitAllCollection(Collection<?> collection, Set<Object> cache, ChainedNode node, int currentLevel, ObjectFilter filter)
     {
         ChainedNode current = node;
 
@@ -474,7 +387,7 @@ public class UniversalVisitor
         }
     }
 
-    private void visitAllArray(Object arrayObject, Set<Object> cache, ChainedNode node, int currentLevel, Filter filter)
+    private void visitAllArray(Object arrayObject, Set<Object> cache, ChainedNode node, int currentLevel, ObjectFilter filter)
     {
         ChainedNode current = node;
 
@@ -490,7 +403,7 @@ public class UniversalVisitor
         }
     }
 
-    private void visitAllMap(Map<?, ?> values, Set<Object> cache, ChainedNode pair, int currentLevel, Filter filter)
+    private void visitAllMap(Map<?, ?> values, Set<Object> cache, ChainedNode pair, int currentLevel, ObjectFilter filter)
     {
         ChainedNode current = pair;
         for (Object thisKey : values.keySet())

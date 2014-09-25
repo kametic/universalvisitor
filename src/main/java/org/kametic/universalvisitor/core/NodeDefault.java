@@ -86,7 +86,7 @@ public class NodeDefault implements Node
     }
 
     @Override
-    public AnnotatedElement annotatedElement()
+    public AnnotatedElement visitedElement()
     {
         return annotatedElement;
     }

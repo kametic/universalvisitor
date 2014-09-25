@@ -309,9 +309,9 @@ public class UniversalVisitorTest
                 indentation += "\t";
             }
 
-            if (node.annotatedElement() instanceof Field)
+            if (node.visitedElement() instanceof Field)
             {
-                Field f = (Field) node.annotatedElement();
+                Field f = (Field) node.visitedElement();
 
                 String value = "";
                 if (f.getType().equals(String.class) || f.getType().equals(Integer.class))
@@ -327,9 +327,9 @@ public class UniversalVisitorTest
                 System.out.println(indentation + "|" + node.level() + "|" + "  " + f.getName() + metadata + value + " from "
                         + f.getDeclaringClass().getSimpleName());
             }
-            if (node.annotatedElement() instanceof Constructor)
+            if (node.visitedElement() instanceof Constructor)
             {
-                Constructor<?> c = (Constructor<?>) node.annotatedElement();
+                Constructor<?> c = (Constructor<?>) node.visitedElement();
                 System.out.println(indentation + "|" + node.level() + "|" + node.metadata() + " " + c.getDeclaringClass().getSimpleName() + "()");
             }
 
@@ -349,7 +349,7 @@ public class UniversalVisitorTest
         @Override
         public Void map(Node node)
         {
-            System.out.println("Current Node : " + node.annotatedElement());
+            System.out.println("Current Node : " + node.visitedElement());
             return null;
         }
 
@@ -377,17 +377,17 @@ public class UniversalVisitorTest
             {
                 this.node = node;
             }
-            if (node.annotatedElement() instanceof Field)
+            if (node.visitedElement() instanceof Field)
             {
-                fields.add(((Field) node.annotatedElement()).getName());
+                fields.add(((Field) node.visitedElement()).getName());
             }
-            if (node.annotatedElement() instanceof Method)
+            if (node.visitedElement() instanceof Method)
             {
-                methods.add(((Method) node.annotatedElement()).getName());
+                methods.add(((Method) node.visitedElement()).getName());
             }
-            if (node.annotatedElement() instanceof Constructor)
+            if (node.visitedElement() instanceof Constructor)
             {
-                constructors.add(((Constructor<?>) node.annotatedElement()).getName());
+                constructors.add(((Constructor<?>) node.visitedElement()).getName());
             }
 
             return null;
@@ -408,7 +408,7 @@ public class UniversalVisitorTest
         public Void map(Node node)
         {
 
-            Field f = (Field) node.annotatedElement();
+            Field f = (Field) node.visitedElement();
 
             Integer value = null;
             try
@@ -437,7 +437,7 @@ public class UniversalVisitorTest
         @Override
         public Integer map(Node node)
         {
-            Field f = (Field) node.annotatedElement();
+            Field f = (Field) node.visitedElement();
 
             Integer value = null;
             try
@@ -473,7 +473,7 @@ public class UniversalVisitorTest
         @Override
         public Integer map(Node node)
         {
-            System.out.println("node " + node.annotatedElement() + " -> " + node.instance() + " type = " + node.instance().getClass());
+            System.out.println("node " + node.visitedElement() + " -> " + node.instance() + " type = " + node.instance().getClass());
 
             counter++;
             maxLevel = Math.max(maxLevel, node.level());

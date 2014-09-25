@@ -35,7 +35,7 @@ import java.lang.reflect.AnnotatedElement;
 public interface Node
 {
 
-    AnnotatedElement annotatedElement();
+    AnnotatedElement visitedElement();
 
     Metadata metadata();
 
