@@ -14,18 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kametic.universalvisitor.api.object;
+package org.kametic.universalvisitor.api;
 
-import java.lang.reflect.Field;
 
-import org.kametic.universalvisitor.api.Filter;
-
-/**
- * 
- * @author ejemba
- *
- */
-public interface FieldFilter extends Filter<Field>
+public interface Visitor<F extends Filter<?>>
 {
+
+    public <T> void visit(Object o, Mapper<T> mapper);
+
+    public <T> void visit(Object o, F filter, Mapper<T> mapper);
+
+    public <T> void visit(Object o, Mapper<T> mapper, Reducer<T, ?>... reducers);
+
+    public <T> void visit(Object o, F filter, Mapper<T> mapper, Reducer<T, ?>... reducers);
+
+    public <T> void visit(Object o, MapReduce<T>... mapReduces);
+
+    public <T> void visit(Object o, F filter, MapReduce<T>... mapReduces);
+
+    public void visit(Object o, Job<?> job);
+
+    public void visit(Object o, F filter, Job<?> job);
 
 }

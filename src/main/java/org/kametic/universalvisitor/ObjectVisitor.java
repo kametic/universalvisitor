@@ -38,10 +38,11 @@ import org.kametic.universalvisitor.api.Mapper;
 import org.kametic.universalvisitor.api.Metadata;
 import org.kametic.universalvisitor.api.Node;
 import org.kametic.universalvisitor.api.Reducer;
-import org.kametic.universalvisitor.api.object.FieldFilter;
+import org.kametic.universalvisitor.api.Visitor;
 import org.kametic.universalvisitor.core.JobDefault;
 import org.kametic.universalvisitor.core.MapReduceDefault;
 import org.kametic.universalvisitor.core.NodeDefault;
+import org.kametic.universalvisitor.core.object.FieldFilter;
 
 /**
  * UniversalVisitor is the main entrypoint. With it you can visit any object graph instance.
