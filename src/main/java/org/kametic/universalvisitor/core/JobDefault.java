@@ -20,20 +20,18 @@ import org.kametic.universalvisitor.api.Job;
 import org.kametic.universalvisitor.api.MapReduce;
 import org.kametic.universalvisitor.api.Reducer;
 
-public class JobDefault<R> implements Job<R>
+public class JobDefault<T , R> implements Job<R>
 {
 
     private MapReduce<?>[]     mapReduces;
     private Reducer<Object, R> resultReducer;
 
-    @SuppressWarnings("rawtypes")
-    public JobDefault(MapReduce... mapReduces)
+    public JobDefault(MapReduce<T>... mapReduces)
     {
         this.mapReduces = mapReduces;
     }
 
-    @SuppressWarnings("rawtypes")
-    public JobDefault(Reducer<Object, R> resultReducer, MapReduce... mapReduces)
+    public JobDefault(Reducer<Object, R> resultReducer, MapReduce<T>... mapReduces)
     {
         this.resultReducer = resultReducer;
         this.mapReduces = mapReduces;

@@ -29,13 +29,13 @@ public interface Visitor<F extends Filter<?>>
 
     public <T> void visit(Object o, F filter, Mapper<T> mapper);
 
-    public <T> void visit(Object o, Mapper<T> mapper, Reducer<?, ?>... reducers);
+    public <T> void visit(Object o, Mapper<T> mapper, Reducer<T, ?>... reducers);
 
-    public <T> void visit(Object o, F filter, Mapper<T> mapper, Reducer<?, ?>... reducers);
+    public <T> void visit(Object o, F filter, Mapper<T> mapper, Reducer<T, ?>... reducers);
 
-    public void visit(Object o, MapReduce<?>... mapReduces);
+    public <T> void visit(Object o, MapReduce<T>... mapReduces);
 
-    public void visit(Object o, F filter, MapReduce<?>... mapReduces);
+    public <T> void visit(Object o, F filter, MapReduce<T>... mapReduces);
 
     public void visit(Object o, Job<?> job);
 

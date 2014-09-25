@@ -20,7 +20,12 @@ import java.lang.reflect.Field;
 
 import org.kametic.universalvisitor.api.Filter;
 
-public interface ObjectFilter extends Filter<Field>
+/**
+ * 
+ * @author ejemba
+ *
+ */
+public interface FieldFilter extends Filter<Field>
 {
 
 }

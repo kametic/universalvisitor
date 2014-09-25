@@ -38,7 +38,7 @@ import org.kametic.universalvisitor.api.Mapper;
 import org.kametic.universalvisitor.api.Metadata;
 import org.kametic.universalvisitor.api.Node;
 import org.kametic.universalvisitor.api.Reducer;
-import org.kametic.universalvisitor.api.object.ObjectFilter;
+import org.kametic.universalvisitor.api.object.FieldFilter;
 import org.kametic.universalvisitor.core.JobDefault;
 import org.kametic.universalvisitor.core.MapReduceDefault;
 import org.kametic.universalvisitor.core.NodeDefault;
@@ -61,14 +61,13 @@ import org.kametic.universalvisitor.core.NodeDefault;
  * @author Epo Jemba
  * @author Pierre Thirouin
  */
-public class ObjectVisitor implements Visitor<ObjectFilter>
+public class ObjectVisitor implements Visitor<FieldFilter>
 { 
 
     /* (non-Javadoc)
      * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Mapper)
      */
     @Override
-    @SuppressWarnings("unchecked")
     public <T> void visit(Object o, Mapper<T> mapper)
     {
         visit(o , null  ,  mapper);
@@ -79,7 +78,7 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T> void visit(Object o, ObjectFilter filter, Mapper<T> mapper)
+    public <T> void visit(Object o, FieldFilter filter, Mapper<T> mapper)
     {
         visit(o, filter, new MapReduceDefault<T>(mapper));
     }
@@ -88,10 +87,7 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
      * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Mapper, org.kametic.universalvisitor.api.Reducer)
      */
     @Override
-    @SuppressWarnings({
-            "unchecked", "rawtypes"
-    })
-    public <T> void visit(Object o, Mapper<T> mapper, Reducer... reducers)
+    public <T> void visit(Object o, Mapper<T> mapper, Reducer<T,?>... reducers)
     {
         visit(o , null , mapper, reducers);
     }
@@ -99,20 +95,18 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
     /* (non-Javadoc)
      * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Filter, org.kametic.universalvisitor.api.Mapper, org.kametic.universalvisitor.api.Reducer)
      */
+    @SuppressWarnings("unchecked")
     @Override
-    @SuppressWarnings({
-            "unchecked", "rawtypes"
-    })
-    public <T> void visit(Object o, ObjectFilter filter, Mapper<T> mapper, Reducer... reducers)
+    public <T> void visit(Object o, FieldFilter filter, Mapper<T> mapper, Reducer<T,?>... reducers)
     {
-        visit(o, filter, new MapReduceDefault<T>(mapper, reducers));
+        visit(o, filter,  new MapReduceDefault<T>(mapper, reducers));
     }
 
     /* (non-Javadoc)
      * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.MapReduce)
      */
     @Override
-    public void visit(Object o, MapReduce<?>... mapReduces)
+    public <T> void visit(Object o, MapReduce<T>... mapReduces)
     {
         visit(o, null, mapReduces);
     }
@@ -123,12 +117,9 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
      * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Filter, org.kametic.universalvisitor.api.MapReduce)
      */
     @Override
-    @SuppressWarnings({
-        "rawtypes"
-    })
-    public void visit(Object o, ObjectFilter filter, MapReduce... mapReduces)
+    public <T> void visit(Object o, FieldFilter filter, MapReduce<T>... mapReduces)
     {
-        visit(o, filter, new JobDefault(mapReduces));
+        visit(o, filter, new JobDefault<T,Object>(mapReduces));
     }
 
 
@@ -173,19 +164,25 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
      * @see org.kametic.universalvisitor.Visitor#visit(java.lang.Object, org.kametic.universalvisitor.api.Filter, org.kametic.universalvisitor.api.Job)
      */
     @Override
-    public void visit(Object o, ObjectFilter filter, Job<?> job)
+    public void visit(Object o, FieldFilter filter, Job<?> job)
     {
         
         Set<Object> cache = new HashSet<Object>();
         
         ChainedNode node = ChainedNode.createRoot();
         
+        Filter<?> f = null;
+        
         if (filter == null)
         {
-            filter = Filter.TRUE;
+            f = Filter.TRUE;
+        } 
+        else 
+        {
+            f = filter;
         }
         
-        recursiveVisit(o, cache, node, filter);
+        recursiveVisit(o, cache, node, (FieldFilter) f);
         
         doMapReduce(job, node);
         
@@ -268,7 +265,7 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
 
   
 
-    private void recursiveVisit(Object object, Set<Object> cache, ChainedNode node, ObjectFilter filter)
+    private void recursiveVisit(Object object, Set<Object> cache, ChainedNode node, FieldFilter filter)
     {
 
         int currentLevel = node.level() + 1;
@@ -301,14 +298,14 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
         }
     }
 
-    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, ObjectFilter filter)
+    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, FieldFilter filter)
     {
         visitObject(object, cache, node, currentLevel, filter, null);
     }
 
    
 
-    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, ObjectFilter filter, Metadata metadata)
+    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, FieldFilter filter, Metadata metadata)
     {
 
         Class<? extends Object> currentClass = object.getClass();
@@ -362,7 +359,7 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
         }
     }
 
-    private void visitAllCollection(Collection<?> collection, Set<Object> cache, ChainedNode node, int currentLevel, ObjectFilter filter)
+    private void visitAllCollection(Collection<?> collection, Set<Object> cache, ChainedNode node, int currentLevel, FieldFilter filter)
     {
         ChainedNode current = node;
 
@@ -387,7 +384,7 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
         }
     }
 
-    private void visitAllArray(Object arrayObject, Set<Object> cache, ChainedNode node, int currentLevel, ObjectFilter filter)
+    private void visitAllArray(Object arrayObject, Set<Object> cache, ChainedNode node, int currentLevel, FieldFilter filter)
     {
         ChainedNode current = node;
 
@@ -403,7 +400,7 @@ public class ObjectVisitor implements Visitor<ObjectFilter>
         }
     }
 
-    private void visitAllMap(Map<?, ?> values, Set<Object> cache, ChainedNode pair, int currentLevel, ObjectFilter filter)
+    private void visitAllMap(Map<?, ?> values, Set<Object> cache, ChainedNode pair, int currentLevel, FieldFilter filter)
     {
         ChainedNode current = pair;
         for (Object thisKey : values.keySet())
