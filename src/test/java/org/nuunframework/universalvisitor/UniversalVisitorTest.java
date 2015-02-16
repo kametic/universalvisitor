@@ -27,6 +27,8 @@ import org.nuunframework.universalvisitor.sample.collections.I;
 import org.nuunframework.universalvisitor.sample.collections.J;
 import org.nuunframework.universalvisitor.sample.collections.K;
 import org.nuunframework.universalvisitor.sample.collections.L;
+import org.nuunframework.universalvisitor.sample.collections.O;
+import org.nuunframework.universalvisitor.sample.collections.P;
 import org.nuunframework.universalvisitor.sample.issues.Issue1;
 import org.nuunframework.universalvisitor.sample.issues.Issue2;
 import org.nuunframework.universalvisitor.sample.levels.L1;
@@ -290,6 +292,37 @@ public class UniversalVisitorTest
         underTest.visit(l1, mapper);
     }
 
+    
+	@Test
+	public void performance_test() {
+		P p = new P();
+		p.k = new K();
+		p.j = new J();
+		p.os = new ArrayList<O>();
+		for (int i = 0; i < 10000; i++) {
+			O o = new O();
+			o.k = new K();
+			o.j = new J();
+			o.p = new P();
+			o.p.j = new J();
+			o.p.os = new ArrayList<O>() {
+				{
+					add(new O());
+					add(new O());
+				}
+			};
+			p.os.add(o);
+		}
+
+		MyPredicate predicate = new MyPredicate();
+		MyMapper mapper = new MyMapper();
+		SumReducer reducer = new SumReducer();
+
+		underTest.visit(p, predicate, mapper, reducer);
+
+		assertThat(mapper.getMaxLevel()).isEqualTo(3);
+	}
+	
     class CheckLevelMap implements Mapper<Void>
     {
 

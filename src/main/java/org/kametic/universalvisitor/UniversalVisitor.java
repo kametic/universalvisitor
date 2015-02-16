@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -120,20 +121,18 @@ public class UniversalVisitor
         visit(o, filter, new JobDefault(mapReduces));
     }
 
-    @SuppressWarnings({
-        "rawtypes"
-    })
-    public void visit(AnnotatedElement ae, Filter filter, Job job)
-    {
+	@SuppressWarnings({ "rawtypes" })
+    public void visit(AnnotatedElement ae, Filter filter, Job job){
         Set<Object> cache = new HashSet<Object>();
-        ChainedNode node = ChainedNode.createRoot();
+		//ChainedNode Changed to linkedList<LocalNode> (perf issues when accessing last element fix)
+		Queue<LocalNode> nodes = new LinkedList<UniversalVisitor.LocalNode>();
         if (filter == null)
         {
             filter = Filter.TRUE;
         }
-
-        recursiveVisit(ae, cache, node, filter);
-        doMapReduce(job, node);
+		//The currentLevel is set at "-1" before the recursive instead of creating a dummy Node
+		recursiveVisit(ae, cache, nodes, filter, -1);
+		doMapReduce(job, nodes);
     }
 
     /**
@@ -144,10 +143,10 @@ public class UniversalVisitor
     @SuppressWarnings({
             "unchecked", "rawtypes"
     })
-    private void doMapReduce(Job<?> job, ChainedNode node)
-    {
-        for (node = node.next; node != null; node = node.next)
-        {
+	private void doMapReduce(Job<?> job, Queue<LocalNode> nodes) 
+	{
+		for (LocalNode node : nodes) 
+		{			
             for (MapReduce mapReduce : job.mapReduces())
             {
                 if (mapReduce.getMapper().handle(node.annotatedElement()))
@@ -170,69 +169,37 @@ public class UniversalVisitor
     {
 
         Set<Object> cache = new HashSet<Object>();
-
-        ChainedNode node = ChainedNode.createRoot();
+		//Changed to linkedList of LocalNode instead of the ChainedNode (perf issues fix)
+		Queue<LocalNode> nodes = new LinkedList<UniversalVisitor.LocalNode>();
 
         if (filter == null)
         {
             filter = Filter.TRUE;
         }
 
-        recursiveVisit(o, cache, node, filter);
+		recursiveVisit(o, cache, nodes, filter, -1);
 
-        doMapReduce(job, node);
+		doMapReduce(job, nodes);
 
     }
 
-    private static class ChainedNode extends NodeDefault
-    {
-        ChainedNode next;
+	//ChainedNode changed to localNode due to performance issues
+	private static class LocalNode extends NodeDefault 
+	{
 
-        protected ChainedNode(Object instance, AnnotatedElement annotatedElement, int level, ChainedNode next)
-        {
+		protected LocalNode(Object instance, AnnotatedElement annotatedElement, int level) 
+		{
             super(instance, annotatedElement, level);
-            this.next = next;
         }
 
-        private void next(ChainedNode node)
-        {
-            if (next != null)
-            {
-                throw new IllegalStateException("next pair can not be set twice.");
-            }
-            next = node;
-        }
 
-        public static ChainedNode createRoot()
-        {
-            return new ChainedNode(new Object(), null, -1, null);
-        }
-
-        public ChainedNode append(Object o, AnnotatedElement ao, int level, Metadata metadata)
-        {
-
-            next(new ChainedNode(o, ao, level, null).metadata(metadata));
-
-            return next;
-        }
 
         @Override
-        public ChainedNode metadata(Metadata metadata)
+		public LocalNode metadata(Metadata metadata) 
         {
-            return (ChainedNode) super.metadata(metadata);
+			return (LocalNode) super.metadata(metadata);
         }
 
-        public ChainedNode last()
-        {
-            if (next != null)
-            {
-                return next.last();
-            }
-            else
-            {
-                return this;
-            }
-        }
 
         @Override
         public String toString()
@@ -243,13 +210,12 @@ public class UniversalVisitor
                 indentation += "\t";
             } // instance()=
             String rep = String.format(
-                    "%sChainedNode [ %s@%s , level=%s , annotatedElement=%s] \n%s",
+                    "%sLocalNode [ %s@%s , level=%s , annotatedElement=%s] \n",
                     indentation,
                     instance().getClass().getSimpleName(),
                     Integer.toHexString(instance().hashCode()),
                     level(),
-                    annotatedElement(),
-                    next);
+                    annotatedElement());
             return rep;
 
             // return "ChainedNode [instance()=" + instance() + ", level()="
@@ -302,11 +268,9 @@ public class UniversalVisitor
     // }
     // }
 
-    private void recursiveVisit(Object object, Set<Object> cache, ChainedNode node, Filter filter)
+	private void recursiveVisit(Object object, Set<Object> cache, Queue<LocalNode> nodes, Filter filter, int currentLevel) 
     {
-
-        int currentLevel = node.level() + 1;
-
+		currentLevel ++;
         if (!cache.contains(object))
         {
 
@@ -318,26 +282,26 @@ public class UniversalVisitor
             }
             else if (Collection.class.isAssignableFrom(object.getClass()))
             {
-                visitAllCollection((Collection<?>) object, cache, node, currentLevel, filter);
+                visitAllCollection((Collection<?>) object, cache, nodes, currentLevel, filter);
             }
             else if (object.getClass().isArray())
             {
-                visitAllArray(object, cache, node, currentLevel, filter);
+                visitAllArray(object, cache, nodes, currentLevel, filter);
             }
             else if (Map.class.isAssignableFrom(object.getClass()))
             {
-                visitAllMap((Map<?, ?>) object, cache, node, currentLevel, filter);
+                visitAllMap((Map<?, ?>) object, cache, nodes, currentLevel, filter);
             }
             else
             {
-                visitObject(object, cache, node, currentLevel, filter);
+                visitObject(object, cache, nodes, currentLevel, filter);
             }
         }
     }
 
-    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, Filter filter)
+	private void visitObject(Object object, Set<Object> cache, Queue<LocalNode> nodes, int currentLevel, Filter filter) 
     {
-        visitObject(object, cache, node, currentLevel, filter, null);
+		visitObject(object, cache, nodes, currentLevel, filter, null);
     }
 
     // private <T> void visitConstructor(Constructor<T> ae, Set<Object> cache, ChainedNode node, int
@@ -395,15 +359,14 @@ public class UniversalVisitor
     // }
     // }
 
-    private void visitObject(Object object, Set<Object> cache, ChainedNode node, int currentLevel, Filter filter, Metadata metadata)
-    {
+	private void visitObject(Object object, Set<Object> cache, Queue<LocalNode> nodes, int currentLevel, Filter filter, Metadata metadata)
+	{
 
         Class<? extends Object> currentClass = object.getClass();
 
         if (!isJdkMember(currentClass))
         {
 
-            ChainedNode current = node;
             Class<?>[] family = getAllInterfacesAndClasses(currentClass);
             for (Class<?> elementClass : family)
             { // We iterate over all the family tree of the current class
@@ -415,7 +378,7 @@ public class UniversalVisitor
                     {
                         if (!isJdkMember(c) && !c.isSynthetic())
                         {
-                            current = current.append(object, c, currentLevel, metadata);
+							nodes.add(new LocalNode(object, c, currentLevel).metadata(metadata));
                         }
                     }
                     //
@@ -423,7 +386,7 @@ public class UniversalVisitor
                     {
                         if (!isJdkMember(m) && !m.isSynthetic())
                         {
-                            current = current.append(object, m, currentLevel, metadata);
+							nodes.add(new LocalNode(object, m, currentLevel).metadata(metadata));
                         }
                     }
 
@@ -431,15 +394,14 @@ public class UniversalVisitor
                     {
                         if (!isJdkMember(f) && !f.isSynthetic())
                         {
+							nodes.add(new LocalNode(object, f, currentLevel).metadata(metadata));
 
-                            current = current.append(object, f, currentLevel, metadata);
 
                             if (filter != null && filter.retains(f))
                             {
                                 Object deeperObject = readField(f, object);
 
-                                recursiveVisit(deeperObject, cache, current, filter);
-                                current = current.last();
+								recursiveVisit(deeperObject, cache, nodes, filter, currentLevel);
                             }
                         }
                     }
@@ -449,9 +411,8 @@ public class UniversalVisitor
         }
     }
 
-    private void visitAllCollection(Collection<?> collection, Set<Object> cache, ChainedNode node, int currentLevel, Filter filter)
-    {
-        ChainedNode current = node;
+	private void visitAllCollection(Collection<?> collection, Set<Object> cache, Queue<LocalNode> nodes, int currentLevel, Filter filter) 
+	{
 
         boolean indexable = collection instanceof List || collection instanceof Queue;
 
@@ -463,45 +424,38 @@ public class UniversalVisitor
             {
                 if (indexable)
                 {
-                    visitObject(value, cache, current, currentLevel, filter, new Metadata(i));
+					visitObject(value, cache, nodes, currentLevel, filter, new Metadata(i));
                 }
                 else
                 {
-                    visitObject(value, cache, current, currentLevel, filter);
+					visitObject(value, cache, nodes, currentLevel, filter);
                 }
-                current = current.last();
             }
         }
     }
 
-    private void visitAllArray(Object arrayObject, Set<Object> cache, ChainedNode node, int currentLevel, Filter filter)
+	private void visitAllArray(Object arrayObject, Set<Object> cache, Queue<LocalNode> nodes, int currentLevel, Filter filter) 
     {
-        ChainedNode current = node;
-
         int l = Array.getLength(arrayObject);
         for (int i = 0; i < l; i++)
         {
             Object value = Array.get(arrayObject, i);
             if (value != null)
             {
-                visitObject(value, cache, current, currentLevel, filter, new Metadata(i));
-                current = current.last();
+				visitObject(value, cache, nodes, currentLevel, filter, new Metadata(i));
             }
         }
     }
 
-    private void visitAllMap(Map<?, ?> values, Set<Object> cache, ChainedNode pair, int currentLevel, Filter filter)
+	private void visitAllMap(Map<?, ?> values, Set<Object> cache, Queue<LocalNode> nodes, int currentLevel, Filter filter) 
     {
-        ChainedNode current = pair;
         for (Object thisKey : values.keySet())
         {
             Object value = values.get(thisKey);
             if (value != null)
             {
-                visitObject(thisKey, cache, current, currentLevel, filter);
-                current = current.last();
-                visitObject(value, cache, current, currentLevel, filter, new Metadata(thisKey));
-                current = current.last();
+				visitObject(thisKey, cache, nodes, currentLevel, filter);
+				visitObject(value, cache, nodes, currentLevel, filter, new Metadata(thisKey));
             }
         }
     }
