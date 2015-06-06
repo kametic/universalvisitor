@@ -1,34 +1,12 @@
 package org.nuunframework.universalvisitor;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.kametic.universalvisitor.UniversalVisitor;
-import org.kametic.universalvisitor.api.Filter;
-import org.kametic.universalvisitor.api.MapReduce;
-import org.kametic.universalvisitor.api.Mapper;
-import org.kametic.universalvisitor.api.Metadata;
-import org.kametic.universalvisitor.api.Node;
-import org.kametic.universalvisitor.api.Reducer;
+import org.kametic.universalvisitor.api.*;
 import org.kametic.universalvisitor.core.MapReduceDefault;
 import org.nuunframework.universalvisitor.sample.Alphabet;
-import org.nuunframework.universalvisitor.sample.collections.H;
-import org.nuunframework.universalvisitor.sample.collections.I;
-import org.nuunframework.universalvisitor.sample.collections.J;
-import org.nuunframework.universalvisitor.sample.collections.K;
-import org.nuunframework.universalvisitor.sample.collections.L;
-import org.nuunframework.universalvisitor.sample.collections.O;
-import org.nuunframework.universalvisitor.sample.collections.P;
+import org.nuunframework.universalvisitor.sample.collections.*;
 import org.nuunframework.universalvisitor.sample.issues.Issue1;
 import org.nuunframework.universalvisitor.sample.issues.Issue2;
 import org.nuunframework.universalvisitor.sample.levels.L1;
@@ -42,6 +20,17 @@ import org.nuunframework.universalvisitor.sample.simple.A;
 import org.nuunframework.universalvisitor.sample.simple.B;
 import org.nuunframework.universalvisitor.sample.simple.C;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  *
  * 
@@ -50,21 +39,13 @@ public class UniversalVisitorTest
 {
 
     UniversalVisitor underTest;
-
     A                a;
-
     D                d;
-
     H                h;
-
     M                m;
-
     N                n;
-
     Issue1           issue1;
-
     Issue2           issue2;
-
     L1               l1;
 
     @SuppressWarnings("serial")
@@ -253,7 +234,6 @@ public class UniversalVisitorTest
     public void issue2()
     {
         CountMapper nopMap = new CountMapper();
-        // System.out.println("============================== ISSUE2 ===================================");
         underTest.visit(issue2, nopMap);
 
         assertThat(nopMap.methods).contains(
@@ -268,7 +248,6 @@ public class UniversalVisitorTest
                 "parentProtected",
                 "parentPackage",
                 "parentPublic");
-        // System.out.println(nopMap.methods);
         assertThat(nopMap.fields).contains(
                 "interface1F",
                 "interface2F",
@@ -281,8 +260,6 @@ public class UniversalVisitorTest
                 "parentProtected",
                 "parentPackage",
                 "parentPublic");
-        // System.out.println(nopMap.fields);
-        System.out.println(nopMap.node);
     }
 
     @Test
@@ -357,13 +334,10 @@ public class UniversalVisitorTest
                 {
                     metadata = new Metadata();
                 }
-                System.out.println(indentation + "|" + node.level() + "|" + "  " + f.getName() + metadata + value + " from "
-                        + f.getDeclaringClass().getSimpleName());
             }
             if (node.annotatedElement() instanceof Constructor)
             {
                 Constructor<?> c = (Constructor<?>) node.annotatedElement();
-                System.out.println(indentation + "|" + node.level() + "|" + node.metadata() + " " + c.getDeclaringClass().getSimpleName() + "()");
             }
 
             return null;
@@ -382,7 +356,6 @@ public class UniversalVisitorTest
         @Override
         public Void map(Node node)
         {
-            System.out.println("Current Node : " + node.annotatedElement());
             return null;
         }
 
@@ -447,7 +420,6 @@ public class UniversalVisitorTest
             try
             {
                 value = (Integer) f.get(node.instance());
-                System.out.println("value " + value);
                 f.set(node.instance(), value * 10);
             }
             catch (IllegalArgumentException e)
@@ -506,7 +478,6 @@ public class UniversalVisitorTest
         @Override
         public Integer map(Node node)
         {
-            System.out.println("node " + node.annotatedElement() + " -> " + node.instance() + " type = " + node.instance().getClass());
 
             counter++;
             maxLevel = Math.max(maxLevel, node.level());
