@@ -19,16 +19,17 @@ package org.kametic.universalvisitor.api;
 /**
  * A MapReduce of T represents :
  * <ul>
- *    <li> one Mapper of  &lt;T> </li>
- *    <li> one ore more Reducer of &lt;T,?> </li>
+ *    <li> one Mapper of  &lt;T&gt; </li>
+ *    <li> one ore more Reducer of &lt;T,?&gt; </li>
  * </ul>
  * It has a method aggregate() whose purpose is to aggregate all the reduction into one Aggregation.
  * <p>
  * MapReduceDefault is the implementation we supply.
- * 
+ * </p>
+ *
  * @author epo.jemba
  *
- * @param <T>
+ * @param <T> the object type to map/reduce
  */
 public interface MapReduce<T>
 {

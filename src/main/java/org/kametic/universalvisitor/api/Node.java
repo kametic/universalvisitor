@@ -19,15 +19,15 @@ package org.kametic.universalvisitor.api;
 import java.lang.reflect.AnnotatedElement;
 
 /**
- * 
  * A node is the element type of the internal linked list created during the visit of the object graph.
  * <p>
- * It has :
+ * It has:
+ * </p>
  * <ul>
- *   <li> the visited annotated element : Field, Method, Constructor, Class or Package.
- *   <li> the Metadata associated with the node.
- *   <li> the level inside the graph visited it starts with 0.
- *   <li> the instance of the visited annotated element.
+ *   <li> the visited annotated element : Field, Method, Constructor, Class or Package.</li>
+ *   <li> the Metadata associated with the node.</li>
+ *   <li> the level inside the graph visited it starts with 0.</li>
+ *   <li> the instance of the visited annotated element.</li>
  * </ul>
  * 
  * @author epo.jemba@kametic.com

@@ -16,48 +16,30 @@
  */
 package org.kametic.universalvisitor;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-
-import org.kametic.universalvisitor.api.Filter;
-import org.kametic.universalvisitor.api.Job;
-import org.kametic.universalvisitor.api.MapReduce;
-import org.kametic.universalvisitor.api.Mapper;
-import org.kametic.universalvisitor.api.Metadata;
-import org.kametic.universalvisitor.api.Node;
-import org.kametic.universalvisitor.api.Reducer;
+import org.kametic.universalvisitor.api.*;
 import org.kametic.universalvisitor.core.JobDefault;
 import org.kametic.universalvisitor.core.MapReduceDefault;
 import org.kametic.universalvisitor.core.NodeDefault;
+
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * UniversalVisitor is the main entrypoint. With it you can visit any object graph instance.
  * <p>
  * It will first visit the object graph then produces a linked list of {@link Node}.
+ * </p>
  * <p> 
- * The Map Reduce pattern will then be applied from this linked list. Users can create their Map Reduce jobs by using the API provided. 
+ * The Map Reduce pattern will then be applied from this linked list. Users can create their Map Reduce jobs by using the API provided.
+ * </p>
  * <ul>
- *    <li> {@link Mapper} : a mapper from the Map Reduce design pattern
- *    <li> {@link Reducer} : a reducer from the Map Reduce design pattern
- *    <li> {@link Job} : a coherent set of one {@link Mapper} and one or more {@link Reducer}s  
- *    <li> {@link MapReduce} : a coherent set of one {@link Mapper} and one or more {@link Reducer}s  
- *    <li> {@link Job} : a set of {@link MapReduce}
+ *    <li> {@link Mapper} : a mapper from the Map Reduce design pattern</li>
+ *    <li> {@link Reducer} : a reducer from the Map Reduce design pattern</li>
+ *    <li> {@link Job} : a coherent set of one {@link Mapper} and one or more {@link Reducer}s</li>
+ *    <li> {@link MapReduce} : a coherent set of one {@link Mapper} and one or more {@link Reducer}s</li>
+ *    <li> {@link Job} : a set of {@link MapReduce}</li>
  *  </ul>
- * 
- * 
+ *
  * @author Epo Jemba
  * @author Pierre Thirouin
  */
@@ -136,9 +118,8 @@ public class UniversalVisitor
     }
 
     /**
-     * @param job
-     * @param node
-     * @return
+     * @param job the job
+     * @param nodes the nodes
      */
     @SuppressWarnings({
             "unchecked", "rawtypes"
@@ -493,8 +474,7 @@ public class UniversalVisitor
     /**
      * Returns all the interfaces and classes implemented or extended by a class.
      *
-     * @param clazz
-     *            The class to search from.
+     * @param clazz The class to search from.
      * @return The array of classes and interfaces found.
      */
     private Class<?>[] getAllInterfacesAndClasses(Class<?> clazz)
@@ -508,8 +488,7 @@ public class UniversalVisitor
      * This method walks up the inheritance hierarchy to make sure we get every class/interface extended or
      * implemented by classes.
      *
-     * @param classes
-     *            The classes array used as search starting point.
+     * @param classes The classes array used as search starting point.
      * @return the found classes and interfaces.
      */
     @SuppressWarnings("unchecked")

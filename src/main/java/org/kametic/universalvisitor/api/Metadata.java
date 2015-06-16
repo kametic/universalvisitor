@@ -20,8 +20,8 @@ package org.kametic.universalvisitor.api;
  * 
  * Metadata is the object held by the Node that keeps metadata like 
  * <ul>
- *   <li> if needed the index, if the element is inside an array or alist.
- *   <li> if needed the key, if the element is inside a Map.
+ *   <li> if needed the index, if the element is inside an array or alist.</li>
+ *   <li> if needed the key, if the element is inside a Map.</li>
  * </ul>
  * 
  * @author epo.jemba@kametic.com
@@ -43,7 +43,7 @@ public class Metadata
     /**
      * Constructor with a key as parameter.
      * 
-     * @param key
+     * @param key the key
      */
     public Metadata(Object key)
     {
@@ -53,7 +53,7 @@ public class Metadata
     /**
      * Constructor with an index as parameter.
      * 
-     * @param index
+     * @param index the index
      */
     public Metadata(int index)
     {

@@ -22,7 +22,8 @@ import java.lang.reflect.AnnotatedElement;
  * A Mapper will "map" all the AnnotatedElement of the visited object graph, it will allows.
  * <p>
  * All results of the map(Node) method will be then given to one or more Reducers.  
- * 
+ * </p>
+ *
  * @author Epo Jemba
  * @author Pierre Thirouin
  */
@@ -40,7 +41,7 @@ public interface Mapper<O>
     /**
      * The implementation of the actual mapping given the node in parameter.
      * 
-     * @param node
+     * @param node the node
      * @return the actual result of the Map.
      */
     O map(Node node);
